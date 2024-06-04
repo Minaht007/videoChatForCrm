@@ -21,7 +21,7 @@ var AppProcess = (function () {
   async function _init(SDP_function, my_connid) {
     serverProcess = SDP_function;
     my_connection_id = my_connid;
-    
+
     eventProcess();
     local_div = document.getElementById("localVideoPlayer");
   }
@@ -49,9 +49,9 @@ var AppProcess = (function () {
 
     $("#videoCamOnOff").on("click", async function () {
       if (video_st == video_states.Camera) {
-        await videoProcess(video_states.None);
+        await videoProcess(video_states.None);       
       } else {
-        await videoProcess(video_states.Camera);
+        await videoProcess(video_states.Camera);      
       }
     });
 
@@ -77,6 +77,8 @@ var AppProcess = (function () {
     }
   }
 
+// The second member of video 
+
   async function updateMediaSenders(track, rtp_senders) {
     for (var con_id in peers_connection_ids) {
       if (connection_status(peers_connection[con_id])) {
@@ -90,7 +92,6 @@ var AppProcess = (function () {
   }
 
   async function videoProcess(newVideoState) {
-    
     try {
       let vstream = null;
       if (newVideoState == video_states.Camera) {
@@ -114,7 +115,7 @@ var AppProcess = (function () {
         videoCamTrack = vstream.getVideoTracks()[0];
         if (videoCamTrack) {
           local_div.srcObject = new MediaStream([videoCamTrack]);
-          updateMediaSenders(videoCamTrack, rtp_vid_senders);
+          updateMediaSenders(videoCamTrack, rtp_vid_senders);       
         }
       }
     } catch (e) {
@@ -122,6 +123,7 @@ var AppProcess = (function () {
       return;
     }
     video_st = newVideoState;
+    
   }
 
   var iceConfiguration = {
@@ -183,9 +185,9 @@ var AppProcess = (function () {
       video_st == video_states.Camera ||
       video_st == video_states.ScreenShare
     ) {
-      updateMediaSenders(videoCamTrack, rtp_vid_senders);
       if (videoCamTrack) {
         updateMediaSenders(videoCamTrack, rtp_vid_senders);
+        
       }
     }
 
@@ -323,6 +325,5 @@ var MyApp = (function () {
     },
   };
 })();
-
 
 // truyu
