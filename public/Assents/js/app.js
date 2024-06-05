@@ -37,11 +37,11 @@ var AppProcess = (function () {
       }
       if (isAudioMute) {
         audio.enabled = true;
-        $(this).html("<span class='material-icons'>mic</span>");
+        $(this).html("<span class='material-icons' style='width:100%;'>mic</span>");
         updateMediaSenders(audio, rtp_aud_senders);
       } else {
         audio.enabled = false;
-        $(this).html("<span class='material-icons'>mic-off</span>");
+        $(this).html("<span class='material-icons' style='width:100%;'>mic-off</span>");
         removeMediaSenders(rtp_aud_senders);
       }
       isAudioMute = !isAudioMute;
@@ -49,9 +49,9 @@ var AppProcess = (function () {
 
     $("#videoCamOnOff").on("click", async function () {
       if (video_st == video_states.Camera) {
-        await videoProcess(video_states.None);       
+        await videoProcess(video_states.None);
       } else {
-        await videoProcess(video_states.Camera);      
+        await videoProcess(video_states.Camera);
       }
     });
 
@@ -64,34 +64,63 @@ var AppProcess = (function () {
     });
   }
 
-  function connection_status(connection) {
-    if (
-      connection &&
-      (connection.connectionState == "new" ||
-        connection.connectionState == "connecting" ||
-        connection.connectionState == "connected")
-    ) {
-      return true;
-    } else {
-      return false;
+  async function loadAudio() {
+    try {
+      var astream = await navigator.mediaDevices.getUserMedia({
+        video: false,
+        audio: true,
+      });
+      audio = astream.getAudioTracks()[0];
+      audio.enabled = false;
+    } catch (e) {
+      console.log(e);
     }
   }
 
-// The second member of video 
+  function connection_status(connection) {
+    return connection && ['new', 'connecting', 'connected'].includes(connection.connectionState);
+  }
 
   async function updateMediaSenders(track, rtp_senders) {
     for (var con_id in peers_connection_ids) {
-      if (connection_status(peers_connection[con_id])) {
+      let connection = peers_connection[peers_connection_ids[con_id]];
+      if (connection_status(connection)) {
         if (rtp_senders[con_id] && rtp_senders[con_id].track) {
           rtp_senders[con_id].replaceTrack(track);
         } else {
-          rtp_senders[con_id] = peers_connection[con_id].addTrack(track);
+          rtp_senders[con_id] = connection.addTrack(track);
         }
       }
     }
   }
 
+  function removeMediaSenders(rtp_senders) {
+    for (var con_id in peers_connection_ids) {
+      let connection = peers_connection[peers_connection_ids[con_id]];
+      if (rtp_senders[con_id] && connection_status(connection)) {
+        connection.removeTrack(rtp_senders[con_id]);
+        rtp_senders[con_id] = null;
+      }
+    }
+  }
+
+  function removeVideoStream(rtp_vid_senders) {
+    if (videoCamTrack) {
+      videoCamTrack.stop();
+      videoCamTrack = null;
+      local_div.srcObject = null;
+      removeMediaSenders(rtp_vid_senders);
+    }
+  }
+
   async function videoProcess(newVideoState) {
+    if (newVideoState == video_states.None) {
+      $("#videoCamOnOff").html("<span class='material-icons' style='width:100%;'>videocam_off</span>");
+      removeVideoStream(rtp_vid_senders);
+      video_st = newVideoState;
+      return;
+    }
+
     try {
       let vstream = null;
       if (newVideoState == video_states.Camera) {
@@ -102,6 +131,7 @@ var AppProcess = (function () {
           },
           audio: false,
         });
+        $("#videoCamOnOff").html("<span class='material-icons' style='width:100%;'>videocam</span>");
       } else if (newVideoState == video_states.ScreenShare) {
         vstream = await navigator.mediaDevices.getDisplayMedia({
           video: {
@@ -110,20 +140,22 @@ var AppProcess = (function () {
           },
           audio: false,
         });
+        $("#ScreenShareOnOff").html("<span class='material-icons' style='width:100%;'>screen_share</span>");
       }
+
       if (vstream && vstream.getVideoTracks().length > 0) {
         videoCamTrack = vstream.getVideoTracks()[0];
         if (videoCamTrack) {
           local_div.srcObject = new MediaStream([videoCamTrack]);
-          updateMediaSenders(videoCamTrack, rtp_vid_senders);       
+          updateMediaSenders(videoCamTrack, rtp_vid_senders);
         }
       }
     } catch (e) {
       console.log(e);
       return;
     }
+
     video_st = newVideoState;
-    
   }
 
   var iceConfiguration = {
@@ -144,10 +176,7 @@ var AppProcess = (function () {
     };
     connection.onicecandidate = function (event) {
       if (event.candidate) {
-        serverProcess(
-          JSON.stringify({ icecandidate: event.candidate }),
-          connid
-        );
+        serverProcess(JSON.stringify({ icecandidate: event.candidate }), connid);
       }
     };
     connection.ontrack = function (event) {
@@ -159,21 +188,15 @@ var AppProcess = (function () {
       }
 
       if (event.track.kind == "video") {
-        remote_vid_stream[connid]
-          .getVideoTracks()
-          .forEach((t) => remote_vid_stream[connid].removeTrack(t));
+        remote_vid_stream[connid].getVideoTracks().forEach((t) => remote_vid_stream[connid].removeTrack(t));
         remote_vid_stream[connid].addTrack(event.track);
         var remoteVideoPlayer = document.getElementById("v_" + connid);
-        remoteVideoPlayer.srcObject = null;
         remoteVideoPlayer.srcObject = remote_vid_stream[connid];
         remoteVideoPlayer.load();
       } else if (event.track.kind == "audio") {
-        remote_aud_stream[connid]
-          .getAudioTracks()
-          .forEach((t) => remote_aud_stream[connid].removeTrack(t));
+        remote_aud_stream[connid].getAudioTracks().forEach((t) => remote_aud_stream[connid].removeTrack(t));
         remote_aud_stream[connid].addTrack(event.track);
         var remoteAudioPlayer = document.getElementById("a_" + connid);
-        remoteAudioPlayer.srcObject = null;
         remoteAudioPlayer.srcObject = remote_aud_stream[connid];
         remoteAudioPlayer.load();
       }
@@ -181,13 +204,9 @@ var AppProcess = (function () {
     peers_connection_ids[connid] = connid;
     peers_connection[connid] = connection;
 
-    if (
-      video_st == video_states.Camera ||
-      video_st == video_states.ScreenShare
-    ) {
+    if (video_st == video_states.Camera || video_st == video_states.ScreenShare) {
       if (videoCamTrack) {
         updateMediaSenders(videoCamTrack, rtp_vid_senders);
-        
       }
     }
 
@@ -198,43 +217,27 @@ var AppProcess = (function () {
     var connection = peers_connection[connid];
     var offer = await connection.createOffer();
     await connection.setLocalDescription(offer);
-    serverProcess(
-      JSON.stringify({
-        offer: connection.localDescription,
-      }),
-      connid
-    );
+    serverProcess(JSON.stringify({ offer: connection.localDescription }), connid);
   }
 
   async function SDPProcess(message, from_connid) {
     message = JSON.parse(message);
     if (message.answer) {
-      await peers_connection[from_connid].setRemoteDescription(
-        new RTCSessionDescription(message.answer)
-      );
+      await peers_connection[from_connid].setRemoteDescription(new RTCSessionDescription(message.answer));
     } else if (message.offer) {
       if (!peers_connection[from_connid]) {
         await setConnection(from_connid);
       }
-      await peers_connection[from_connid].setRemoteDescription(
-        new RTCSessionDescription(message.offer)
-      );
+      await peers_connection[from_connid].setRemoteDescription(new RTCSessionDescription(message.offer));
       var answer = await peers_connection[from_connid].createAnswer();
       await peers_connection[from_connid].setLocalDescription(answer);
-      serverProcess(
-        JSON.stringify({
-          answer: answer,
-        }),
-        from_connid
-      );
+      serverProcess(JSON.stringify({ answer: answer }), from_connid);
     } else if (message.icecandidate) {
       if (!peers_connection[from_connid]) {
         await setConnection(from_connid);
       }
       try {
-        await peers_connection[from_connid].addIceCandidate(
-          message.icecandidate
-        );
+        await peers_connection[from_connid].addIceCandidate(message.icecandidate);
       } catch (e) {
         console.log(e);
       }
@@ -267,7 +270,6 @@ var MyApp = (function () {
     event_process_for_signaling_server();
   }
 
-  var socket = null;
   function event_process_for_signaling_server() {
     socket = io.connect();
 
@@ -279,7 +281,7 @@ var MyApp = (function () {
     };
 
     socket.on("connect", () => {
-      if (socket.connect) {
+      if (socket.connected) {
         AppProcess.init(SDP_function, socket.id);
         if (user_id != "" && meeting_id != "") {
           socket.emit("userconnect", {
@@ -325,5 +327,3 @@ var MyApp = (function () {
     },
   };
 })();
-
-// truyu
