@@ -10,28 +10,17 @@
       integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH"
       crossorigin="anonymous"
     />
-    <link rel="stylesheet" href="./public/Assents/css/style.css" />
+    <link rel="stylesheet" href="/assets/css/style.css" />
     <link
       rel="stylesheet"
       href="https://fonts.googleapis.com/icon?family=Material+Icons"
     />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.0.4/socket.io.js"></script>
-    <script src="public/Assents/js/jqury-3.7.1.min.js"></script>
-    <script src="/public/Assents/js/app.js"></script>
     <script>
-      $(function () {
-        const urlParams = new URLSearchParams(window.location.search);
-        var meeting_id = urlParams.get("meetingID");
-        var user_id = window.prompt("Enter your userid");
-        if (!user_id || !meeting_id) {
-          alert("User id or meeting id missing");
-          window.location.href = "/action.html";
-          return;
-        }
-        $("#meetingContainer").show();
-        MyApp._init(user_id, meeting_id);
-      });
+      console.info('Checking if global variable "io" is defined...');
+      console.log(io);
     </script>
+    <script src="assets/js/jqury-3.7.1.min.js"></script>
   </head>
   <body>
     <main class="container-fluid d-flex flex-column home-wrap">
@@ -138,5 +127,33 @@
         </div>
       </div>
     </main>
+
+    <script src="/assets/js/app.js"></script>
+    <script>
+      $(function () {
+        console.log(window.location.search);
+        
+        const urlParams = new URLSearchParams(window.location.search);
+        
+        var meeting_id = urlParams.get("meetingID");
+        if (!meeting_id) {
+          meeting_id = window.prompt('Enter Meeting ID:');
+        }
+
+        var user_id = window.prompt("Enter your userid");
+
+        if (!user_id || !meeting_id) {
+          console.warn("User id or meeting id missing. Redirecting to /action.html");
+          window.location.href = "/action.html";
+          return;
+        }
+
+        // This is called in the MyApp._init method 
+        //$("#meetingContainer").show();
+
+        MyApp._init(user_id, meeting_id);
+      });
+    </script>
+
   </body>
 </html>

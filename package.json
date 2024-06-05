@@ -1,7 +1,6 @@
 {
   "name": "videochat2",
   "version": "1.0.0",
-  "description": "",
   "main": "index.js",
   "scripts": {
     "start": "node server",
@@ -14,5 +13,8 @@
     "express": "^4.19.2",
     "jquery": "^3.7.1",
     "socket.io": "^4.7.5"
-  }
+  },
+  "devDependencies": {},
+  "keywords": [],
+  "description": ""
 }

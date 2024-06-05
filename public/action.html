@@ -10,17 +10,17 @@
       integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH"
       crossorigin="anonymous"
     />
-    <link rel="stylesheet" href="public/Assents/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="/assets/css/bootstrap.min.css" />
     <link
       rel="stylesheet"
       href="https://fonts.googleapis.com/icon?family=Material+Icons"
     />
 
-    <link rel="stylesheet" href="public/Assents/css/style.css" />
+    <link rel="stylesheet" href="/assets/css/style.css" />
   </head>
   <body>
     <nav class="navbar navbar-expand-md fixed-top">
-        <img src="public/assents/images/google-meet-icon.png" alt="" class="logo" />
+        <img src="/assets/images/google-meet-icon.png" alt="" class="logo" />
         <a href="#" class="navbar-brand text-dark">Google Meet</a>
         <div class="collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav mr-auto">
@@ -68,7 +68,7 @@
                 </ul>
             </div>
             <div style="padding-right: 40px">
-                <img src="public/assents/images/google-meet-people.jpg" alt="" class="signin-image" />
+                <img src="/assets/images/google-meet-people.jpg" alt="" class="signin-image" />
             </div>
         </div>
     </main>
@@ -88,9 +88,9 @@
                 window.location.replace(meetingUrl)
             });
             $(document).on("click", ".new-meeting", function(){    
-                var eight_d_value = Math.floor(Math.random()*10000000)            
+                var eight_d_value = Math.floor(Math.random()*10000000);            
                 var meetingUrl = window.location.origin+"?meetingID="+eight_d_value;
-                window.location.replace(meetingUrl)
+                window.location.replace(meetingUrl);
             });
         });
     </script>
