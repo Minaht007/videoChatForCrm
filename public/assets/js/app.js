@@ -100,7 +100,7 @@ var AppProcess = (function () {
       }
     }
   }
-
+  
   function removeMediaSenders(rtp_senders) {
     for (var con_id in peers_connection_ids) {
       let connection = peers_connection[peers_connection_ids[con_id]];
@@ -225,29 +225,20 @@ var AppProcess = (function () {
       }
     };
     connection.ontrack = function (event) {
-      if (!remote_vid_stream[connid]) {
-        remote_vid_stream[connid] = new MediaStream();
-      }
-      if (!remote_aud_stream[connid]) {
-        remote_aud_stream[connid] = new MediaStream();
-      }
-
       if (event.track.kind == "video") {
-        remote_vid_stream[connid]
-          .getVideoTracks()
-          .forEach((t) => remote_vid_stream[connid].removeTrack(t));
+        if (!remote_vid_stream[connid]) {
+          remote_vid_stream[connid] = new MediaStream();
+        }
         remote_vid_stream[connid].addTrack(event.track);
         var remoteVideoPlayer = document.getElementById("v_" + connid);
         remoteVideoPlayer.srcObject = remote_vid_stream[connid];
-        remoteVideoPlayer.load();
       } else if (event.track.kind == "audio") {
-        remote_aud_stream[connid]
-          .getAudioTracks()
-          .forEach((t) => remote_aud_stream[connid].removeTrack(t));
+        if (!remote_aud_stream[connid]) {
+          remote_aud_stream[connid] = new MediaStream();
+        }
         remote_aud_stream[connid].addTrack(event.track);
         var remoteAudioPlayer = document.getElementById("a_" + connid);
         remoteAudioPlayer.srcObject = remote_aud_stream[connid];
-        remoteAudioPlayer.load();
       }
     };
     peers_connection_ids[connid] = connid;
@@ -304,7 +295,25 @@ var AppProcess = (function () {
       }
     }
   }
-
+async function closeConnection(connid){
+  peers_connection_ids[connid]=null;
+  if(peers_connection[connid]){
+    peers_connection[connid].close();
+    peers_connection[connid] = null;
+  }
+  if(remote_aud_stream[connid]){
+    remote_aud_stream[connid].getTrack().forEach((t)=> {
+      if(t.stop) t.stop()
+    })
+  remote_aud_stream[connid] = null;
+  }
+  if(remote_vid_stream[connid]){
+    remote_vid_stream[connid].getTrack().forEach((t)=> {
+      if(t.stop) t.stop()
+    })
+    remote_vid_stream[connid] = null;
+  }
+}
   return {
     setNewConnection: async function (connid) {
       await setConnection(connid);
@@ -314,6 +323,9 @@ var AppProcess = (function () {
     },
     processClientFunc: async function (data, from_connid) {
       await SDPProcess(data, from_connid);
+    },
+    closeConnectionCall: async function (connid) {
+      await closeConnection(connid);
     },
   };
 })();
@@ -352,6 +364,11 @@ var MyApp = (function () {
         }
       }
     });
+
+    socket.on("inform_other_about_disconnect_user", function(data){
+      $("#"+data.connId).remove();
+      AppProcess.closeConnectionCall(data.connId);
+    })
 
     socket.on("inform_other_about_me", function (data) {
       addUser(data.other_user_id, data.connId);
