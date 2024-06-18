@@ -370,7 +370,7 @@ const MyApp = (function () {
     socket.on("inform_other_about_disconnect_user", function (data) {
       $("#" + data.connId).remove();
       $(".participant-count").text(data.uNumber);
-      $("#participant_"+data.connId+"").remove();
+      $("#participant_" + data.connId + "").remove();
       AppProcess.closeConnectionCall(data.connId);
     });
 
@@ -392,6 +392,25 @@ const MyApp = (function () {
           AppProcess.setNewConnection(other_users[i].connectionId);
         }
       }
+    });
+
+    socket.on("showFileMessage", function (data) {
+      let time = new Date();
+      let lTime = time.toLocaleDateString("en-US", {
+        hour: "numeric",
+        minute: "numeric",
+        hour12: true,
+      });
+      let attachFileAreaForOther = document.querySelector(".show-attach-file");
+
+      attachFileAreaForOther.innerHTML +=
+        "<div class='left-align' style='display: flex; align-items: center;'><img src='public/assets/images' style='height: 40px; width: 40px;' class='caller-image circle'><div style='font-weight: 600; margin: 0 5px;'>" +
+        data.username +
+        "</div>:<div><a style='color:#007bff;' href='" +
+        data.filePath +
+        "' download>" +
+        data.fileName +
+        "</a></div></div><br/>";
     });
 
     socket.on("SDPProcess", async function (data) {
@@ -431,7 +450,7 @@ const MyApp = (function () {
         minute: "numeric",
         hour12: true,
       });
-      let div = $("<div></div>").html(
+      let div = $("<div>").html(
         "<span class='font-weight-bold me-3' style='color:black'>" +
           user_id +
           "</span>" +
@@ -441,6 +460,12 @@ const MyApp = (function () {
       );
       $("#messages").append(div);
       $("#msgbox").val("");
+    });
+    let url = window.location.href;
+    $(".meeting_url").text(url);
+
+    $("#divUsers").on("dblclick", "video", function () {
+      this.requestFullscreen();
     });
   }
 
@@ -453,7 +478,11 @@ const MyApp = (function () {
     newDivId.show();
     $("#divUsers").append(newDivId);
     $(".in-call-wrap-up").append(
-      '<div class="in-call-wrap d-flex justify-content-between align-items-center mb-3" id="participant_'+connId+'"> <div class="participant-img-name-wrap display-center cursor-pointer"> <div class="participant-img"> <img src="/assets/images/other.jpg" alt="" class="border border-secondary" style="height: 40px; width: 40px; border-radius: 50%;"> </div> <div class="participant-name ms-2">'+other_users_id+'</div> </div> <div class="participant-action-wrap display-center"> <div class="participant-action-dot display-center me-2 cursor-pointer"> <span class="material-icons">more_vert</span> </div> <div class="participant-action-pin display-center me-2 cursor-pointer"> <span class="material-icons">push_pin</span> </div> </div> </div>'
+      '<div class="in-call-wrap d-flex justify-content-between align-items-center mb-3" id="participant_' +
+        connId +
+        '"> <div class="participant-img-name-wrap display-center cursor-pointer"> <div class="participant-img"> <img src="/assets/images/other.jpg" alt="" class="border border-secondary" style="height: 40px; width: 40px; border-radius: 50%;"> </div> <div class="participant-name ms-2">' +
+        other_users_id +
+        '</div> </div> <div class="participant-action-wrap display-center"> <div class="participant-action-dot display-center me-2 cursor-pointer"> <span class="material-icons">more_vert</span> </div> <div class="participant-action-pin display-center me-2 cursor-pointer"> <span class="material-icons">push_pin</span> </div> </div> </div>'
     );
     $(".participant-count").text(userNum);
   }
@@ -461,31 +490,172 @@ const MyApp = (function () {
   $(document).on("click", ".people-heading-text", function () {
     $(".in-call-wrap-up").show(300);
     $(".chat-show-wrap").hide(300);
-    $(this).addClass("active")
-    $(".chat-heading").removeClass("active")
+    $(this).addClass("active");
+    $(".chat-heading").removeClass("active");
   });
   $(document).on("click", ".chat-heading", function () {
     $(".in-call-wrap-up").hide(300);
     $(".chat-show-wrap").show(300);
-    $(this).addClass("active")
-    $(".people-heading-text").removeClass("active")
+    $(this).addClass("active");
+    $(".people-heading-text").removeClass("active");
   });
   $(document).on("click", ".meeting-heading-cross", function () {
-   $(".g-right-details-wrap").hide(300)
+    $(".g-right-details-wrap").hide(300);
   });
   $(document).on("click", ".top-left-participant-wrap", function () {
-    $(".g-right-details-wrap").show(300)
-    $(".in-call-wrap-up").show(300)
-    $(".chat-show-wrap").hide(300)
+    $(".people-heading-text").addClass("active");
+    $(".chat-heading").removeClass("active");
+    $(".g-right-details-wrap").show(300);
+    $(".in-call-wrap-up").show(300);
+    $(".chat-show-wrap").hide(300);
+  });
+  $(document).on("click", ".top-left-chat-wrap", function () {
+    $(".people-heading-text").removeClass("active");
+    $(".chat-heading").addClass("active");
+    $(".g-right-details-wrap").show(300);
+    $(".in-call-wrap-up").hide(300);
+    $(".chat-show-wrap").show(300);
+  });
+  //  disconnect user
+  $(document).on("click", ".end-call-wrap", function () {
+    $(".top-box-show")
+      .css({
+        display: "block",
+      })
+      .html(
+        ' <div class="top-box align-vertical-middle profile-dialogue-show"> <h1 class="mt-3" style="text-align: center; color: white;">Leave Meeting</h1> <hr> <div class="call-leave-cancel-action d-flex justify-content-center align-items-center w-100"> <a href="./action.html"><button class="call-leave-action btn btn-danger me-5">Leave</button></a> <button class="call-cancel-action btn btn-secondary">Cancel</button> </div> </div>'
+      );
+  });
 
-   });
-   $(document).on("click", ".top-left-chat-wrap", function () {
-    $(".g-right-details-wrap").show(300)
-    $(".in-call-wrap-up").hide(300)
-    $(".chat-show-wrap").show(300)
+  $(document).mouseup(function (e) {
+    let container = new Array();
+    container.push($(".top-box-show"));
+    $.each(container, function (key, value) {
+      if (!$(value).is(e.target) && $(value).has(e.target).length === 0) {
+        $(value).empty();
+      }
+    });
+  });
+  $(document).mouseup(function (e) {
+    let container = new Array();
+    container.push($(".g-details"));
+    container.push($(".g-right-details-wrap"));
+    $.each(container, function (key, value) {
+      if (!$(value).is(e.target) && $(value).has(e.target).length === 0) {
+        $(value).hide(400);
+      }
+    });
+  });
+  $(document).on("click", ".call-cancel-action", function () {
+    $(".top-box-show").html("");
+  });
 
-   });
+  $(document).on("click", ".copy_info", function () {
+    let meetingUrl = $(".meeting_url").text();
+    navigator.clipboard
+      .writeText(meetingUrl)
+      .then(function () {
+        $(".link-conf").show();
+        setTimeout(function () {
+          $(".link-conf").hide();
+        }, 3000);
+      })
+      .catch(function (err) {
+        console.error("Message:", err);
+      });
+  });
+  // Details Menu
+  $(".g-details").hide();
+  $(document).on("click", ".meeting-details-button", function () {
+    $(".g-details").slideToggle(300);
+  });
+  $(document).on("click", ".g-details-heading-attachment", function () {
+    $(".g-details-heading-show").hide();
+    $(".g-details-heading-show-attachment").show();
+    $(this).addClass("active");
+    $(".g-details-heading-detail").removeClass("active");
+  });
+  $(document).on("click", ".g-details-heading-detail", function () {
+    $(".g-details-heading-show").show();
+    $(".g-details-heading-show-attachment").hide();
+    $(this).addClass("active");
+    $(".g-details-heading-attachment").removeClass("active");
+  });
+  // Share Menu
+  let base_url = window.location.origin;
 
+  $(document).on("change", ".custom-file-input", function () {
+    let fileName = $(this).val().split("\\").pop();
+    $(this).siblings(".custom-file-label").addClass("selected").html(fileName);
+  });
+
+  $(document).on("click", ".share-attach", function (e) {
+    e.preventDefault();
+    let att_img = $("#customFile").prop("files")[0];
+    if (!att_img) {
+      console.log("No file selected.");
+      return;
+    }
+    let formData = new FormData();
+    formData.append("zipfile", att_img);
+    formData.append("meeting_id", meeting_id);
+    formData.append("username", user_id);
+    console.log("FormData prepared:", formData);
+    $.ajax({
+      url: base_url + "/attachimg",
+      type: "POST",
+      data: formData,
+      contentType: false,
+      processData: false,
+      success: function (response) {
+        console.log("Success:", response);
+      },
+      error: function (xhr, status, error) {
+        console.error("Error:", status, error);
+      },
+    });
+    let attachFileArea = document.querySelector(".show-attach-file");
+const attachFileName = $("#customFile").val().split("\\").pop();
+let attachFilePath = "/public/attachment/" + meeting_id + "/" + attachFileName;
+attachFileArea.innerHTML +=
+  "<div class='left-align' style='display: flex; align-items: center;'><img src='/public/assets/images' style='height: 40px; width: 40px;' class='caller-image circle'><div style='font-weight: 600; margin: 0 5px;'>" +
+  user_id +
+  "</div>:<div><a style='color:#007bff;' href='" +
+  attachFilePath +
+  "' download>" +
+  attachFileName +
+  "</a></div></div><br/>";
+
+$("label.custom-file-label").text("");
+socket.emit("fileTransferToOther", {
+  username: user_id,
+  meetingid: meeting_id,
+  filePath: attachFilePath,
+  fileName: attachFileName,
+});
+
+
+    // let attachFileArea = document.querySelector(".show-attach-file");
+    // const attachFileName = $("#customFile").val().split("\\").pop();
+    // var attachFilePath =
+    //   "../images" + meeting_id + "/" + attachFileName;
+    // attachFileArea.innerHTML +=
+    //   "<div class='left-align' style='display: flex; align-items: center;'><img src='../images' style='height: 40px; width: 40px;' class='caller-image circle'><div style='font-weight: 600; margin: 0 5px;'>" +
+    //   user_id +
+    //   "</div>:<div><a style='color:#007bff;' href='" +
+    //   attachFilePath +
+    //   "' download>" +
+    //   attachFileName +
+    //   "</a></div></div><br/>";
+
+    // $("label.custom-file-label").text("");
+    // socket.emit("fileTransferToOther", {
+    //   username: user_id,
+    //   meetingid: meeting_id,
+    //   filePath: attachFilePath,
+    //   fileName: attachFileName,
+    // });
+  });
 
   return {
     _init: function (uid, mid) {

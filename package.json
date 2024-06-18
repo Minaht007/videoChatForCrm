@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "start": "node server",
+    "start": "nodemon server",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Andrii_Telnov",
@@ -11,10 +11,13 @@
   "dependencies": {
     "bootstrap": "^5.3.3",
     "express": "^4.19.2",
+    "express-fileupload": "^1.5.0",
     "jquery": "^3.7.1",
     "socket.io": "^4.7.5"
   },
-  "devDependencies": {},
   "keywords": [],
-  "description": ""
+  "description": "",
+  "devDependencies": {
+    "nodemon": "^3.1.3"
+  }
 }
