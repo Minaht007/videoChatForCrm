@@ -614,47 +614,52 @@ const MyApp = (function () {
         console.error("Error:", status, error);
       },
     });
+
     let attachFileArea = document.querySelector(".show-attach-file");
-const attachFileName = $("#customFile").val().split("\\").pop();
-let attachFilePath = "/public/attachment/" + meeting_id + "/" + attachFileName;
-attachFileArea.innerHTML +=
-  "<div class='left-align' style='display: flex; align-items: center;'><img src='/public/assets/images' style='height: 40px; width: 40px;' class='caller-image circle'><div style='font-weight: 600; margin: 0 5px;'>" +
-  user_id +
-  "</div>:<div><a style='color:#007bff;' href='" +
-  attachFilePath +
-  "' download>" +
-  attachFileName +
-  "</a></div></div><br/>";
+    const attachFileName = $("#customFile").val().split("\\").pop();
+    let attachFilePath = "attachment/" + meeting_id + "/" + attachFileName;
+    
+    attachFileArea.innerHTML +=
+      "<div class='left-align' style='display: flex; align-items: center;'>"
+      "<img src='assets/images/other.jpg' style='height: 40px; width: 40px;' class='caller-image circle'>"
+      "<div style='font-weight: 600; margin: 0 5px;'>" +
+      user_id +
+      "</div>:<div><a style='color:#007bff;' href='" +
+      attachFilePath +
+      "' download>" +
+      attachFileName +
+      "</a></div></div><br/>";
+    
+    $("label.custom-file-label").text("");
+    socket.emit("fileTransferToOther", {
+      username: user_id,
+      meetingid: meeting_id,
+      filePath: attachFilePath,
+      fileName: attachFileName,
+    });
+    
 
-$("label.custom-file-label").text("");
-socket.emit("fileTransferToOther", {
-  username: user_id,
-  meetingid: meeting_id,
-  filePath: attachFilePath,
-  fileName: attachFileName,
-});
 
+  //   let attachFileArea = document.querySelector(".show-attach-file");
+  //   const attachFileName = $("#customFile").val().split("\\").pop();
+  //   var attachFilePath =
+  //     "public/attachment/" + meeting_id + "/" + attachFileName;
+  //   attachFileArea.innerHTML +=
+  //     "<div class='left-align' style='display: flex; align-items: center;'><img src='public/assets/images/other.jpg' style='height: 40px; width: 40px;' class='caller-image circle'><div style='font-weight: 600; margin: 0 5px;'>" +
+  //     user_id +
+  //     "</div>:<div><a style='color:#007bff;' href='" +
+  //     attachFilePath +
+  //     "' download>" +
+  //     attachFileName +
+  //     "</a></div></div><br/>";
 
-    // let attachFileArea = document.querySelector(".show-attach-file");
-    // const attachFileName = $("#customFile").val().split("\\").pop();
-    // var attachFilePath =
-    //   "../images" + meeting_id + "/" + attachFileName;
-    // attachFileArea.innerHTML +=
-    //   "<div class='left-align' style='display: flex; align-items: center;'><img src='../images' style='height: 40px; width: 40px;' class='caller-image circle'><div style='font-weight: 600; margin: 0 5px;'>" +
-    //   user_id +
-    //   "</div>:<div><a style='color:#007bff;' href='" +
-    //   attachFilePath +
-    //   "' download>" +
-    //   attachFileName +
-    //   "</a></div></div><br/>";
-
-    // $("label.custom-file-label").text("");
-    // socket.emit("fileTransferToOther", {
-    //   username: user_id,
-    //   meetingid: meeting_id,
-    //   filePath: attachFilePath,
-    //   fileName: attachFileName,
-    // });
+  //   $("label.custom-file-label").text("");
+  //   socket.emit("fileTransferToOther", {
+  //     username: user_id,
+  //     meetingid: meeting_id,
+  //     filePath: attachFilePath,
+  //     fileName: attachFileName,
+  //   });
   });
 
   return {

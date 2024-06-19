@@ -82,10 +82,10 @@ io.on("connection", (socket) => {
     }
   })
 
-  socket.on("fileTransferToOther", function(msg){
-    console.log(msg)
-    let user0
-  })
+  // socket.on("fileTransferToOther", function(msg){
+  //   console.log(msg)
+  //   let user0
+  // })
 
   socket.on("disconnect", function(){
     console.log("User got disconnected");
