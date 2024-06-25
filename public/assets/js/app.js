@@ -404,7 +404,7 @@ const MyApp = (function () {
       let attachFileAreaForOther = document.querySelector(".show-attach-file");
 
       attachFileAreaForOther.innerHTML +=
-        "<div class='left-align' style='display: flex; align-items: center;'><img src='public/assets/images' style='height: 40px; width: 40px;' class='caller-image circle'><div style='font-weight: 600; margin: 0 5px;'>" +
+        "<div class='left-align' style='display: flex; align-items: center;'><img src='/assets/images/other.jpg' style='height: 40px; width: 40px;' class='caller-image circle'><div style='font-weight: 600; margin: 0 5px;'>" +
         data.username +
         "</div>:<div><a style='color:#007bff;' href='" +
         data.filePath +
@@ -617,19 +617,19 @@ const MyApp = (function () {
 
     let attachFileArea = document.querySelector(".show-attach-file");
     const attachFileName = $("#customFile").val().split("\\").pop();
-    let attachFilePath = "attachment/" + meeting_id + "/" + attachFileName;
-    
+    let attachFilePath = "/attachment/" + meeting_id + "/" + attachFileName;
+
     attachFileArea.innerHTML +=
-      "<div class='left-align' style='display: flex; align-items: center;'>"
-      "<img src='assets/images/other.jpg' style='height: 40px; width: 40px;' class='caller-image circle'>"
-      "<div style='font-weight: 600; margin: 0 5px;'>" +
+      "<div class='left-align' style='display: flex; align-items: center;'>";
+    ("<img src='/assets/images/' style='height: 40px; width: 40px;' class='caller-image circle'>");
+    "<div style='font-weight: 600; margin: 0 5px;'>" +
       user_id +
       "</div>:<div><a style='color:#007bff;' href='" +
       attachFilePath +
       "' download>" +
       attachFileName +
       "</a></div></div><br/>";
-    
+
     $("label.custom-file-label").text("");
     socket.emit("fileTransferToOther", {
       username: user_id,
@@ -637,30 +637,89 @@ const MyApp = (function () {
       filePath: attachFilePath,
       fileName: attachFileName,
     });
-    
-
-
-  //   let attachFileArea = document.querySelector(".show-attach-file");
-  //   const attachFileName = $("#customFile").val().split("\\").pop();
-  //   var attachFilePath =
-  //     "public/attachment/" + meeting_id + "/" + attachFileName;
-  //   attachFileArea.innerHTML +=
-  //     "<div class='left-align' style='display: flex; align-items: center;'><img src='public/assets/images/other.jpg' style='height: 40px; width: 40px;' class='caller-image circle'><div style='font-weight: 600; margin: 0 5px;'>" +
-  //     user_id +
-  //     "</div>:<div><a style='color:#007bff;' href='" +
-  //     attachFilePath +
-  //     "' download>" +
-  //     attachFileName +
-  //     "</a></div></div><br/>";
-
-  //   $("label.custom-file-label").text("");
-  //   socket.emit("fileTransferToOther", {
-  //     username: user_id,
-  //     meetingid: meeting_id,
-  //     filePath: attachFilePath,
-  //     fileName: attachFileName,
-  //   });
   });
+
+  // =====================================Record Button============================================
+
+  $(document).on("click", ".option-icon", function () {
+    $(".recording-show").toggle(300);
+  });
+
+  $(document).on("click", ".start-record", function () {
+    $(this)
+      .removeClass()
+      .addClass("stop-record btn-danger text-dark")
+      .text("Stop Recording");
+    startRecording();
+  });
+
+  $(document).on("click", ".stop-record", function () {
+    $(this)
+      .removeClass()
+      .addClass("start-record btn-dark text-danger")
+      .text("Start Recording");
+    mediaRecorder.stop();
+  });
+
+  var mediaRecorder;
+  var chunks = [];
+
+  async function captureScreen(
+    mediaContraints = {
+      video: true,
+    }
+  ) {
+    const screenStream = await navigator.mediaDevices.getDisplayMedia(
+      mediaContraints
+    );
+    return screenStream;
+  }
+
+  async function captureAudio(
+    mediaContraints = {
+      video: false,
+      audio: true,
+    }
+  ) {
+    const audioStream = await navigator.mediaDevices.getUserMedia(
+      mediaContraints
+    );
+    return audioStream;
+  }
+
+  async function startRecording() {
+    const screenStream = await captureScreen();
+    const audioStream = await captureAudio();
+    const stream = new MediaStream([
+      ...screenStream.getTracks(),
+      ...audioStream.getTracks(),
+    ]);
+    mediaRecorder = new MediaRecorder(stream);
+    mediaRecorder.start();
+
+    mediaRecorder.onstop = function (e) {
+      var clipName = prompt("Enter a name for your recording");
+      stream.getTracks().forEach((track) => track.stop());
+      const blob = new Blob(chunks, {
+        type: "video/webm",
+      });
+
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.style.display = "none";
+      a.href = url;
+      a.download = clipName + ".webm";
+      document.body.appendChild(a);
+      a.click();
+      setTimeout(() => {
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(url);
+      }, 100);
+    };
+    mediaRecorder.ondataavailable = function (e) {
+      chunks.push(e.data);
+    };
+  }
 
   return {
     _init: function (uid, mid) {

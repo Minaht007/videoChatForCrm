@@ -5,6 +5,7 @@
         "attachimg",
         "btnsend",
         "connid",
+        "Contraints",
         "fileupload",
         "Handeling",
         "meetingid",
@@ -12,6 +13,7 @@
         "Telnov",
         "userconnect",
         "userid",
-        "videocam"
+        "videocam",
+        "zipfile"
     ]
 }
