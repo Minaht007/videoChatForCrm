@@ -9,8 +9,8 @@ module.exports = {
   },
   plugins: [
     new HtmlWebpackPlugin({
-      filename: 'index.html',  // Имя генерируемого HTML файла
-      template: './src/index.html',  // Исходный шаблон HTML
+      filename: 'action.html',  // Имя генерируемого HTML файла
+      template: './public/action.html',  // Исходный шаблон HTML
       inject: true,
       meta: {
         'http-equiv': 'refresh',  // Добавление метатега для автоматического перенаправления
