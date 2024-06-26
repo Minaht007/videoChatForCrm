@@ -33,7 +33,7 @@ io.on("connection", (socket) => {
 
     other_users.forEach((v) => {
       socket.to(v.connectionId).emit("inform_other_about_me", {
-        other_users_id: data.displayName,
+        other_user_id: data.displayName,
         connId: socket.id,
         userNumber: userCount,
       });
