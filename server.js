@@ -11,7 +11,7 @@ let server = app.listen(3000, function () {
 const io = require("socket.io")(server, {
   allowEIO3: true,
 });
-app.use(express.static(path.join(__dirname, "public")));
+app.use(express.static(path.join(__dirname)));
 let userConnections = [];
 io.on("connection", (socket) => {
   console.log("socket id is", socket.id);
