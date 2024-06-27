@@ -29,7 +29,7 @@ io.on("connection", (socket) => {
     });
 
     let userCount = userConnections.length;
-    console.log(userCount);
+    
 
     other_users.forEach((v) => {
       socket.to(v.connectionId).emit("inform_other_about_me", {
@@ -135,21 +135,4 @@ app.post("/attachimg", function (req, res) {
   });
 });
 
-// app.post("/attachimg", function(req, res){
-//   let data = req.body;
-//   let imageFile = req.files.zipfile
-//   console.log(imageFile)
-//   let dir = "public/attachment/"+ "/" + data.meeting_id + "/"
-//   if(!fs.existsSync(dir)) {
-//     fs.mkdirSync(dir)
-//   }
-//   imageFile.mv("public/attachment"+"/" +data.meeting_id+"/"+imageFile.name, function(error){
-//     if(error){
-//       console.log("couldn`t upload the file, error: ", error)
-//     } else{
-//       console.log("Image file successfully uploaded")
-//     }
-//   })
-// })
 
-// test
