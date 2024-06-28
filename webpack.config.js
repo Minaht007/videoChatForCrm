@@ -9,7 +9,7 @@ module.exports = {
   },
   plugins: [
     new HtmlWebpackPlugin({
-      filename: 'index.html',  
+      filename: 'action.html',  
       template: './public/index.html',
       inject: true,
       meta: {
@@ -19,3 +19,5 @@ module.exports = {
     }),
   ],
 };
+
+// Clear VAR
